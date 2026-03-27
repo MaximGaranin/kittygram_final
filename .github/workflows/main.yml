@@ -49,12 +49,12 @@ jobs:
       - name: Run backend tests
         working-directory: ./backend
         env:
-          DJANGO_SECRET_KEY: test-secret
-          DJANGO_DEBUG: "True"
+          SECRET_KEY: "django-insecure-test-key-for-ci-cd-123"
+          DEBUG: "True"
           DB_ENGINE: "django.db.backends.sqlite3"
           DB_NAME: ":memory:"
         run: |
-          python manage.py test
+          python manage.py test --keepdb --parallel
 
       - name: Set up Node
         uses: actions/setup-node@v4
