@@ -26,9 +26,21 @@ jobs:
       - name: Install backend deps
         working-directory: ./backend
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install ruff
+          sudo apt-get update && sudo apt-get install -y \
+            gcc \
+            libjpeg-dev \
+            libpng-dev \
+            libwebp-dev \
+            libtiff-dev \
+            libfreetype6-dev \
+            liblcms2-dev \
+            libopenjp2-7-dev \
+            libzip-dev \
+            libpq-dev \
+            && sudo rm -rf /var/lib/apt/lists/* \
+            && python -m pip install --upgrade pip \
+            && pip install -r requirements.txt \
+            && pip install ruff
 
       - name: Run Ruff (backend lint)
         working-directory: ./backend
