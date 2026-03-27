@@ -1,27 +1,60 @@
-version: '3'
-
-volumes:
-  pg_data:
-  static:
+version: '3.8'
 
 services:
   db:
-    image: postgres:13
+    image: postgres:16-alpine
+    env_file: .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
   backend:
-    build: ./backend/
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     env_file: .env
+    depends_on:
+      - db
+    volumes:
+      - static_value:/app/static/
+      - media_value:/app/media
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             gunicorn kittygram_backend.wsgi:application --bind 0:8000"
+    restart: always
+
   frontend:
-    env_file: .env
-    build: ./frontend/
-    command: cp -r /app/build/. /static/
+    build:
+      context: .
+    dockerfile: frontend/Dockerfile
+    depends_on:
+      - backend
     volumes:
-      - static:/static
+      - static_frontend:/usr/share/nginx/html
+    restart: always
+
   gateway:
-    build: ./nginx/
-    env_file: .env
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    depends_on:
+      - backend
+      - frontend
     ports:
-      - 9000:80
+      - "80:80"
     volumes:
-      - static:/static
+      - static_value:/var/www/backend_static/
+      - media_value:/var/www/backend_media/
+      - static_frontend:/usr/share/nginx/html
+    restart: always
+
+volumes:
+  postgres_data:
+  static_value:
+  media_value:
+  static_frontend:
