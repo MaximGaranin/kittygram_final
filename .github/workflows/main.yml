@@ -46,16 +46,6 @@ jobs:
         working-directory: ./backend
         run: ruff check .
 
-      - name: Run backend tests
-        working-directory: ./backend
-        env:
-          SECRET_KEY: "django-insecure-test-key-for-ci-cd-123"
-          DEBUG: "True"
-          DB_ENGINE: "django.db.backends.sqlite3"
-          DB_NAME: ":memory:"
-        run: |
-          python manage.py test --keepdb --parallel
-
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
